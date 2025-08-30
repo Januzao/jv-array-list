@@ -81,8 +81,8 @@ public class ArrayList<T> implements List<T> {
             if (equal((T) dataArray[i], element)) {
                 final T removed = (T) dataArray[i];
 
-                for (int j = i; j < size - 1; j++) {
-                    dataArray[j] = dataArray[j + 1];
+                if (i < size - 1) {
+                    shiftLeft(i);
                 }
 
                 dataArray[--size] = null;
@@ -106,7 +106,7 @@ public class ArrayList<T> implements List<T> {
 
     private void grow() {
         int oldSize = dataArray.length;
-        int newSize = (int) (oldSize + (oldSize * GROWTH_FACTOR));
+        int newSize = (int) (oldSize * GROWTH_FACTOR);
 
         Object[] newArray = new Object[newSize];
 
