@@ -1,16 +1,15 @@
 package core.basesyntax;
 
-import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public class ArrayList<T> implements List<T> {
-    private static final int DEFAULT_SIZE = 10;
+    private static final double GROWTH_FACTOR = 1.5;
+    private static final int DEFAULT_CAPACITY = 10;
     private Object[] dataArray;
     private int size;
 
     public ArrayList() {
-        dataArray = new Object[DEFAULT_SIZE];
+        dataArray = new Object[DEFAULT_CAPACITY];
     }
 
     @Override
@@ -24,17 +23,13 @@ public class ArrayList<T> implements List<T> {
 
     @Override
     public void add(T value, int index) {
-        if (index < 0 || index > size) {
-            throw new ArrayListIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-        }
+        checkPositionIndex(index);
 
         if (size >= dataArray.length) {
             grow();
         }
 
-        for (int i = size; i > index; i--) {
-            dataArray[i] = dataArray[i - 1];
-        }
+        shiftRight(index);
 
         dataArray[index] = value;
         size++;
@@ -53,32 +48,26 @@ public class ArrayList<T> implements List<T> {
 
     @Override
     public T get(int index) {
-        if (index < 0 || index >= size) {
-            throw new ArrayListIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-        }
+        checkIndex(index);
 
         return (T) dataArray[index];
     }
 
     @Override
     public void set(T value, int index) {
-        if (index < 0 || index >= size) {
-            throw new ArrayListIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-        }
+        checkIndex(index);
 
         dataArray[index] = value;
     }
 
     @Override
     public T remove(int index) {
-        if (index < 0 || index >= size) {
-            throw new ArrayListIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-        }
+        checkIndex(index);
 
         final T removed = (T) dataArray[index];
 
-        for (int i = index; i < size - 1; i++) {
-            dataArray[i] = dataArray[i + 1];
+        if (index < size - 1) {
+            shiftLeft(index);
         }
 
         dataArray[--size] = null;
@@ -89,7 +78,7 @@ public class ArrayList<T> implements List<T> {
     @Override
     public T remove(T element) {
         for (int i = 0; i < size; i++) {
-            if (Objects.equals(dataArray[i], element)) {
+            if (equal((T) dataArray[i], element)) {
                 final T removed = (T) dataArray[i];
 
                 for (int j = i; j < size - 1; j++) {
@@ -117,7 +106,36 @@ public class ArrayList<T> implements List<T> {
 
     private void grow() {
         int oldSize = dataArray.length;
-        int newSize = oldSize + (oldSize << 1);
-        dataArray = Arrays.copyOf(dataArray, newSize);
+        int newSize = (int) (oldSize + (oldSize * GROWTH_FACTOR));
+
+        Object[] newArray = new Object[newSize];
+
+        System.arraycopy(dataArray, 0, newArray, 0, size);
+
+        dataArray = newArray;
+    }
+
+    private void shiftRight(int index) {
+        System.arraycopy(dataArray, index, dataArray, index + 1, size - index);
+    }
+
+    private void shiftLeft(int index) {
+        System.arraycopy(dataArray, index + 1, dataArray, index, size - index - 1);
+    }
+
+    private void checkPositionIndex(int index) {
+        if (index < 0 || index > size) {
+            throw new ArrayListIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+    }
+
+    private void checkIndex(int index) {
+        if (index < 0 || index >= size) {
+            throw new ArrayListIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+    }
+
+    private boolean equal(T firstValue, T secondValue) {
+        return firstValue == secondValue || (firstValue != null && firstValue.equals(secondValue));
     }
 }
